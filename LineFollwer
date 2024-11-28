@@ -1,0 +1,44 @@
+from XRPLib.board import Board
+from XRPLib.rangefinder import Rangefinder
+from XRPLib.reflectance import Reflectance
+from XRPLib.differential_drive import DifferentialDrive
+import random
+import time
+
+turn_effort = 0.7
+LEFT_THRESHOLD = 0.77
+RIGHT_THRESHOLD = 0.77
+
+board = Board.get_default_board()
+rangefinder = Rangefinder.get_default_rangefinder()
+reflectance = Reflectance.get_default_reflectance()
+differentialDrive = DifferentialDrive.get_default_differential_drive()
+
+try:
+    while not (rangefinder.distance()) < 10:
+        left_sensor = reflectance.get_left()
+        right_sensor = reflectance.get_right()
+
+        # Debug logs
+        print(f"Left Sensor: {left_sensor}, Right Sensor: {right_sensor}, Distance: {rangefinder.distance()}")
+
+        
+        if not (0 <= left_sensor <= 1 and 0 <= right_sensor <= 1):
+            print("Error: Sensor readings out of bounds!")
+            continue
+
+        
+        if left_sensor < LEFT_THRESHOLD and right_sensor < RIGHT_THRESHOLD:
+            
+            differentialDrive.arcade(0.5, turn_effort)  # Move forward
+        elif left_sensor < LEFT_THRESHOLD:
+            
+            differentialDrive.arcade(0.7, -0.7*turn_effort)
+        elif right_sensor < LEFT_THRESHOLD:
+            
+            differentialDrive.arcade(0.7, 0.7*turn_effort)
+        else:
+            differentialDrive.arcade(0, 0.7*turn_effort)  
+
+except Exception as e:
+    print(f"Error encountered: {e}")
